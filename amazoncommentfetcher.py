@@ -17,7 +17,7 @@ fileName = "comments.txt"
 fileOut = 0
 
 
-# FIXME -*- approach comment parsing from the different angle: use reverse, luke!
+# FIXME -*- approach comment parsing from a different angle: use reverse, luke!
 
 def getNextPageURL(data):
     """
@@ -55,9 +55,11 @@ def parseReviewsStartLine(data):
 
     for n, line in enumerate(data):
         if re.search(searchPat, line) is not None:
-            tmp = parseLinkFromLine(line)
-            #print "tmp [%s]" % tmp
+            tmp = parseLinkFromLine(data[n - 1])
+            tmp = tmp.split(" ")[0]
+            print "tmp [%s]" % tmp
             links[tmp] = (n, tmp) # (lineNro, URL)
+            break
     if len(links) is 1:
         return links.values()[0]
     # In case we got several links, correct one will be
@@ -267,7 +269,7 @@ def cleanUpComment(c):
     r = 0
 
     if c is None or len(c) < 1:
-    	return ''
+        return ''
 
     # Thanks Amazon for the nice mark up -> CLEAN IT UP!
     while r < len(c):
@@ -336,8 +338,8 @@ def main():
     ### Determine where the reviews starts
     revStarts = parseReviewsStartLine(data) # Returns (lineNmbr, link)
     if revStarts is None:
-    	print "\nAre you sure you gave the front page of the product?"
-    	exit(10)
+        print "\nAre you sure you gave the front page of the product?"
+        exit(10)
     ### Line number where the "See all %d comments" is
     commentsLineNro = int(revStarts[0])
     cmntTotal = int(parseCommentsTotalCount(data[commentsLineNro]))
