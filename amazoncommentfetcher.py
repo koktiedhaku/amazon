@@ -29,7 +29,7 @@ def getNextPageURL(data):
     ------------------------------------------------------
     """
     for line in reversed(data):
-        if "<span class=\"paging\">" in line:
+        if '<span class="paging">' in line:
             e = line.rfind("|")
             if e < 0:
                 return None
@@ -56,8 +56,8 @@ def parseReviewsStartLine(data):
     for n, line in enumerate(data):
         if re.search(searchPat, line) is not None:
             tmp = parseLinkFromLine(data[n - 1])
-            tmp = tmp.split(" ")[0]
-            print "tmp [%s]" % tmp
+            tmp = tmp.split(" ")[0] # XXX Ugliness
+            #print "tmp [%s]" % tmp
             links[tmp] = (n, tmp) # (lineNro, URL)
             break
     if len(links) is 1:
@@ -83,7 +83,7 @@ def parseCommentsTotalCount(line):
     line = line.replace(",", "")
     tmp = re.search(nmbrPat, line)
     if tmp is not None:
-        return re.search(r"\d+", tmp.group(0)).group(0)
+        return int(re.search(r"\d+", tmp.group(0)).group(0))
     return -1
 
 
@@ -122,8 +122,18 @@ def parsePagesTotal(data):
                             tmp = 0
                         break
                 i -= 1
-            return tmp
+            return int(tmp)
     return -1
+
+
+def generatePageNumberLink(link, pagenumber):
+    """
+    http://www.amazon.com/Logitech-910-001822-M510-Wireless-Mouse/product-reviews/B003NR57BY/ref=cm_cr_pr_top_link_85?ie=UTF&pageNumber=85&showViewpoints=0
+    becomes
+    http://www.amazon.com/Logitech-910-001822-M510-Wireless-Mouse/product-reviews/B003NR57BY/ref=cm_cr_pr_top_link_85?ie=UTF&pageNumber=pagenumber&showViewpoints=0
+    """
+    p = re.compile("pageNumber=\d+")
+    return re.sub(p, "pageNumber=%d" % pagenumber, link)
 
 
 def parseLinkFromLine(s):
@@ -315,6 +325,49 @@ def estimatedTimeOfArrival(t, pagesProcessed, pageCount):
     return (int(pageCount) - int(pagesProcessed)) * avg
 
 
+def generatePageLinks():
+    cmntTotal = pageTotal = revStarts = 0
+
+    if len(argv) == 1:
+        amazonurl = str(raw_input())
+    elif len(argv) == 2:
+        amazonurl = argv[1]
+    else:
+        usage()
+
+    data = urlopener(amazonurl)
+    if data is None:
+        print "Zero data"
+        exit(1)
+
+    ### Determine where the reviews starts
+    revStarts = parseReviewsStartLine(data) # Returns (lineNmbr, link)
+    if revStarts is None:
+        print "\nAre you sure you gave the front page of the product?"
+        exit(10)
+
+    ### Line number where the "See all %d comments" is
+    commentsLineNro = int(revStarts[0])
+    cmntTotal = parseCommentsTotalCount(data[commentsLineNro])
+
+    if cmntTotal < 0:
+        print "No reviews"
+        exit(0)
+    if revStarts is None:
+        print "Cannot determine where the comment area is"
+        exit(3)
+
+    data = urlopener(revStarts[1])
+    timePassed = time()
+
+    # Will do the following:
+    #    o  cboundaries has linenumbers of where the comments starts
+    #    o  tmpbndr includes begin and end linenumbers of the comment area
+    nextPage = getNextPageURL(data)
+    pagesTotal = parsePagesTotal(data)
+    return [generatePageNumberLink(nextPage, cnt) for cnt in range(1, pagesTotal + 1)]
+
+
 # Main function that binds everything together
 def main():
     cboundaries = [] # Comment boundaries
@@ -355,18 +408,26 @@ def main():
     timePassed = time()
 
     # FILEOPEN
-    try:
-        if os.path.isfile(fileName):
-            os.remove(fileName)
-        fileOut = open(fileName, "a")
-    except:
-        print "Cannot write to file =  %s" % fileName
+#    try:
+#        if os.path.isfile(fileName):
+#            os.remove(fileName)
+#        fileOut = open(fileName, "a")
+#    except:
+#        print "Cannot write to file =  %s" % fileName
 
-    try:
+    #try:
+    if 1 == 1:
         # Will do the following:
         #    o  cboundaries has linenumbers of where the comments starts
         #    o  tmpbndr includes begin and end linenumbers of the comment area
         nextPage = getNextPageURL(data)
+        print "------- %s" % nextPage
+        pagesTotal = int(parsePagesTotal(data))
+        print "PAGESTOTAL %d" % (pagesTotal)
+        for cnt in range(1, pagesTotal + 1):
+            print "%s" % (generatePageNumberLink(nextPage, cnt))
+        exit(1)
+
         while True:
             if pageCount is 1:
                 pagesTotal = parsePagesTotal(data)
@@ -393,12 +454,14 @@ def main():
                 break
             data = urlopener(nextPage)
             pageCount += 1
-    except:
-        fileOut.close()
-    finally:
-        timePassed = time() - timePassed
-        stderr.write("Operation took %.2d:%.2d minute(s)" % (timePassed/60, timePassed%60))
-        fileOut.close()
+    else:
+    #except:
+        #fileOut.close()
+        pass
+#    finally:
+#        timePassed = time() - timePassed
+#        stderr.write("Operation took %.2d:%.2d minute(s)" % (timePassed/60, timePassed%60))
+#        fileOut.close()
 
     # Check whether we have gone through all pages
     if int(pageCount) != int(pagesTotal):
@@ -408,6 +471,12 @@ def main():
 
     return 0
 
+def usage():
+    print "python amazoncommentfetcher.py http://amazonurl.com"
+    exit(1)
+
 
 if __name__ == "__main__":
-    main()
+    #main()
+    print generatePageLinks()
+
