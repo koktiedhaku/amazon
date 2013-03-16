@@ -11,9 +11,6 @@ from strip_html import strip_ml_tags as stripHtmlTags
 from urlopener import urlopener
 
 comments = []
-cmntCount = 0
-fileName = "comments.txt"
-fileOut = 0
 
 
 def parseCommentsTotalCount(data):
@@ -100,6 +97,7 @@ def parseComments(data):
     """
     Parse comments from site
     """
+    global comments
     n = 1
     reviewBegins = '<div style="margin-left:0.5em;">'
     reviewEnds = '<div style="padding-top: 10px; clear: both; width: 100%;">'
@@ -140,38 +138,8 @@ def parseComments(data):
                     data[i] = stripHtmlTags(data[i])
                     curcomment.comment = re.sub("\s+", " ", data[i])
                 i += 1
-            print curcomment.__repr__()
-
-def cleanUpComment(c):
-    """
-    return cleaned up comment, '' if fail.
-    """
-    p = re.compile(r"\s+")
-    r = 0
-
-    if c is None or len(c) < 1:
-        return ''
-
-    # Thanks Amazon for the nice mark up -> CLEAN IT UP!
-    while r < len(c):
-        # Multiple spaces to a single space
-        if re.search(p, c[r]) != None:
-            c[r] = re.sub(p, " ", c[r])
-            if re.search(r"^\s", c[r]) != None or c[r] is '':
-                c.pop(r)
-                continue
-        if c[r] is "" or re.search(r"^\n", c[r]) != None:
-            c.pop(r)
-            continue
-        if "---" in c[r]:
-            c.pop(r)
-            continue
-        # FIXME -*- please use tag matcher instead of this glue
-        if re.search(r"^\(REAL NAME\)", c[r]) != None:
-            c[r] = re.sub(r"^\(REAL NAME\)", "", c[r])
-            continue
-        r += 1
-    return c
+            #print curcomment.__repr__()
+            comments.append(curcomment)
 
 def estimatedTimeOfArrival(t, pagesProcessed, pageCount):
     timePassed = time() - t
@@ -190,10 +158,7 @@ def generatePageLinks(link, pagesTotal):
 
 # Main function that binds everything together
 def main():
-    cboundaries = [] # Comment boundaries
-    cmntTotal = pageTotal = revStarts = 0
-    global cmntCount, comments, fileName, fileOut
-    pageCount = 1
+    global comments
 
     if len(argv) == 1:
         amazonurl = str(raw_input('> '))
@@ -222,6 +187,8 @@ def main():
     linklist = generatePageLinks(totalcommPages[1], totalcommPages[0])
     first = urlopener(linklist[0])
     parseComments(first)
+
+    print comments[0]
 
     return 0
 
