@@ -1,17 +1,42 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import re
 import os
+import re
+import threading
+import time
+from Queue import Queue
 from sys import argv, exit, stderr, stdout
-from time import time
 
 from Comment import Comment
 from strip_html import strip_ml_tags as stripHtmlTags
 from urlopener import urlopener
 
 comments = []
+linklist = []
+fetchqueue = Queue()
+MAX_THREADS = 10
+MAX_TRIES = 5
+cnt = 0
 
+class Fetcher(threading.Thread):
+    def __init__(self, q):
+        threading.Thread.__init__(self)
+
+        self.fetchqueue = q
+
+    def run(self):
+        global cnt
+
+        while True:
+            url = self.fetchqueue.get()
+            #print "%s: Processing %s" % (i, url)
+            data = urlopener(url)
+            parseComments(data)
+            self.fetchqueue.task_done()
+            print "[%3d / %d] completed" % (cnt + 1, len(linklist))
+            cnt += 1
+            time.sleep(100)
 
 def parseCommentsTotalCount(data):
     """
@@ -39,6 +64,8 @@ def parsePagesTotal(data):
     ------------------------------------------------------
                                                ^
              Match against this --------------´
+
+    @return tuple (pagestotal, baselink with &pageNumber=)
     """
     p = re.compile(r"(\d|,)*\d*")
 
@@ -140,9 +167,11 @@ def parseComments(data):
                 i += 1
             #print curcomment.__repr__()
             comments.append(curcomment)
+            #return curcomment
+        #return None
 
 def estimatedTimeOfArrival(t, pagesProcessed, pageCount):
-    timePassed = time() - t
+    timePassed = time.time() - t
 
     if pagesProcessed is 0:
         return 0
@@ -158,7 +187,7 @@ def generatePageLinks(link, pagesTotal):
 
 # Main function that binds everything together
 def main():
-    global comments
+    global comments, linklist
 
     if len(argv) == 1:
         amazonurl = str(raw_input('> '))
@@ -166,10 +195,9 @@ def main():
         amazonurl = argv[1]
     elif len(argv) >= 3:
         amazonurl = argv[1]
-        fileName = argv[2]
 
     # Don't show that silly banner, we are not going to use it anyway
-    if '&showViewpoints=1' in amazonurl:
+    if "&showViewpoints=1" in amazonurl:
         amazonurl = amazonurl.replace("&showViewpoints=1", "&showViewpoints=0")
 
     data = urlopener(amazonurl) # Read data
@@ -183,12 +211,22 @@ def main():
         print "(or ugly malfunction)"
         exit(1)
 
-    totalcommPages = parsePagesTotal(data) # returns (pagecount, lastpageurl)
-    linklist = generatePageLinks(totalcommPages[1], totalcommPages[0])
-    first = urlopener(linklist[0])
-    parseComments(first)
+    totalcommPages, baseUrl = parsePagesTotal(data) # returns (pagecount, lastpageurl)
+    if totalcommPages == -1:
+        print "That link surely is a comment page?"
+        sys.exit(1)
+    linklist = generatePageLinks(baseUrl, totalcommPages)
 
-    print comments[0]
+    # Feed links to our Fetcher daemon
+    for i in range(MAX_THREADS):
+        t = Fetcher(fetchqueue)
+        t.setDaemon(True)
+        t.start()
+    for url in linklist:
+        fetchqueue.put(url)
+    fetchqueue.join()
+
+    print comments[3]
 
     return 0
 
