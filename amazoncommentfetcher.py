@@ -15,8 +15,7 @@ from urlopener import urlopener
 comments = []
 linklist = []
 fetchqueue = Queue()
-MAX_THREADS = 10
-MAX_TRIES = 5
+MAX_THREADS = 30
 cnt = 0
 
 class Fetcher(threading.Thread):
@@ -30,13 +29,11 @@ class Fetcher(threading.Thread):
 
         while True:
             url = self.fetchqueue.get()
-            #print "%s: Processing %s" % (i, url)
             data = urlopener(url)
             parseComments(data)
             self.fetchqueue.task_done()
             print "[%3d / %d] completed" % (cnt + 1, len(linklist))
             cnt += 1
-            time.sleep(100)
 
 def parseCommentsTotalCount(data):
     """
@@ -186,21 +183,10 @@ def generatePageLinks(link, pagesTotal):
 
 
 # Main function that binds everything together
-def main():
+def main(url):
     global comments, linklist
 
-    if len(argv) == 1:
-        amazonurl = str(raw_input('> '))
-    if len(argv) == 2:
-        amazonurl = argv[1]
-    elif len(argv) >= 3:
-        amazonurl = argv[1]
-
-    # Don't show that silly banner, we are not going to use it anyway
-    if "&showViewpoints=1" in amazonurl:
-        amazonurl = amazonurl.replace("&showViewpoints=1", "&showViewpoints=0")
-
-    data = urlopener(amazonurl) # Read data
+    data = urlopener(url)
     if data is None:
         print "Zero data"
         exit(1)
@@ -226,10 +212,23 @@ def main():
         fetchqueue.put(url)
     fetchqueue.join()
 
-    print comments[3]
+    print "Comment count %d, number %d, header: %s" % (len(comments), 9, comments[9].header)
 
     return 0
 
 if __name__ == "__main__":
-    main()
+    if len(argv) == 1:
+        amazonurl = str(raw_input('> '))
+    if len(argv) == 2:
+        amazonurl = argv[1]
+    elif len(argv) >= 3:
+        amazonurl = argv[1]
+
+    # Don't show that silly banner, we are not going to use it anyway
+    if "&showViewpoints=1" in amazonurl:
+        amazonurl = amazonurl.replace("&showViewpoints=1", "&showViewpoints=0")
+
+    starttime = time.time()
+    main(amazonurl)
+    print "It took %.2f sec to fetch the comments" % (time.time() - starttime)
 
