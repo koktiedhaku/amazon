@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Copyright (c) 2013 Ville Valkonen <weezelding@gmail.com>
+Copyright (c) 2013 Ville Valkonen <weezelding[at]gmail.com>
 
 Permission to use, copy, modify, and distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
@@ -252,7 +252,8 @@ if __name__ == "__main__":
     starttime = time.time()
     main(amazonurl)
     time.sleep(0.5)
-    print "It took %.2f sec to fetch %d comments (%d pages)" % (time.time() - starttime, len(comments), len(linklist))
+    print "It took %.2f sec to fetch %d comments (%d pages)" % \
+            (time.time() - starttime, len(comments), len(linklist))
 
     print "Writing comments to file %s" % (filename_out)
     write2File(comments)
