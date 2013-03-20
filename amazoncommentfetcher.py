@@ -14,6 +14,7 @@ from urlopener import urlopener
 
 comments = []
 linklist = []
+filename_out = "comments.txt"
 fetchqueue = Queue()
 MAX_THREADS = 30
 cnt = 0
@@ -212,9 +213,13 @@ def main(url):
         fetchqueue.put(url)
     fetchqueue.join()
 
-    print "Comment count %d, number %d, header: %s" % (len(comments), 9, comments[9].header)
-
     return 0
+
+def write2File(comments):
+    with open(filename_out, 'w') as f:
+        for comment in comments:
+            f.write(comment.__repr__())
+            f.write("---")
 
 if __name__ == "__main__":
     if len(argv) == 1:
@@ -230,5 +235,9 @@ if __name__ == "__main__":
 
     starttime = time.time()
     main(amazonurl)
-    print "It took %.2f sec to fetch the comments" % (time.time() - starttime)
+    time.sleep(0.5)
+    print "It took %.2f sec to fetch %d comments (%d pages)" % (time.time() - starttime, len(comments), len(linklist))
+
+    print "Writing comments to file %s" % (filename_out)
+    write2File(comments)
 
