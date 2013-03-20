@@ -13,3 +13,8 @@
 
 `python amazoncommentfetcher.py link-to-a-review-page`
 
+or
+
+`python amazoncommentfetcher.py`
+
+and then the program asks the link, `> ` .
