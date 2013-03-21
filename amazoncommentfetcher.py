@@ -173,6 +173,8 @@ def parseComments(data):
                 # Parse body text
                 elif reviewText in data[i]:
                     i += 3
+                    if '<span class="small"' in data[i]: # Yep, dirty trick :(
+                        i += 3
                     data[i] = stripHtmlTags(data[i])
                     curcomment.comment = re.sub("\s+", " ", data[i])
                 i += 1
