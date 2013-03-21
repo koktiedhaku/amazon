@@ -1,6 +1,5 @@
 class Comment:
     def __init__(self):
-        self.number = ""
         self.helpful = ""
         self.stars = ""
         self.header = ""

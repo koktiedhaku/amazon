@@ -19,7 +19,3 @@ or
 
 and then the program asks the link after `> ` mark.
 
-## TODO
-
-* If there's only one page of comments, parsing will fail
-

@@ -139,7 +139,6 @@ def parseComments(data):
     Parse comments from site
     """
     global comments
-    n = 1
     reviewBegins = '<div style="margin-left:0.5em;">'
     reviewEnds = '<div style="padding-top: 10px; clear: both; width: 100%;">'
     stars_line = 'margin-right:5px;'
@@ -153,8 +152,6 @@ def parseComments(data):
     for i in range(boundaries[0], boundaries[1] + 1):
         if reviewBegins in data[i]:
             curcomment = Comment()
-            curcomment.number = n
-            n += 1
             while reviewEnds not in data[i]:
                 # Parse stars
                 if stars_line in data[i]:
@@ -179,10 +176,8 @@ def parseComments(data):
                     data[i] = stripHtmlTags(data[i])
                     curcomment.comment = re.sub("\s+", " ", data[i])
                 i += 1
-            #print curcomment.__repr__()
             comments.append(curcomment.getonelinecomment())
-            #return curcomment
-        #return None
+            #comments.append(curcomment.__repr__())
 
 def estimatedTimeOfArrival(t, pagesProcessed, pageCount):
     timePassed = time.time() - t
@@ -209,15 +204,21 @@ def main(url):
         exit(1)
 
     commentcount = parseCommentsTotalCount(data)
-    if commentcount < 1:
+    if commentcount == -1:
         print "No customer reviews available or not in the reviews page"
-        print "(or ugly malfunction)"
+        print "(or an ugly malfunction)"
         exit(1)
+    elif commentcount <= 10:
+        commentarea = commentsStartStopLineNmbr(data) # returns (start, end) of comments area
+        # Only one page
+        if commentarea != None:
+            parseComments(data)
+            return
 
     totalcommPages, baseUrl = parsePagesTotal(data) # returns (pagecount, lastpageurl)
     if totalcommPages == -1:
         print "That link surely is a comment page?"
-        sys.exit(1)
+        exit(1)
     linklist = generatePageLinks(baseUrl, totalcommPages)
 
     # Feed links to our Fetcher daemon
