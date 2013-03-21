@@ -16,4 +16,6 @@ class Comment:
         return "\nNumber: %s\nHelpful: %s\nStars: %s\nHeader: %s\nComment: %s\n" %\
             (self.number, self.helpful, self.stars, self.header, \
             self.getComment())
+    def getonelinecomment(self):
+        return self.comment.replace("\n", " ")
 

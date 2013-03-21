@@ -180,7 +180,7 @@ def parseComments(data):
                     curcomment.comment = re.sub("\s+", " ", data[i])
                 i += 1
             #print curcomment.__repr__()
-            comments.append(curcomment)
+            comments.append(curcomment.getonelinecomment())
             #return curcomment
         #return None
 
@@ -210,7 +210,7 @@ def main(url):
 
     commentcount = parseCommentsTotalCount(data)
     if commentcount < 1:
-        print "No customer reviews available"
+        print "No customer reviews available or not in the reviews page"
         print "(or ugly malfunction)"
         exit(1)
 
@@ -234,8 +234,8 @@ def main(url):
 def write2File(comments):
     with open(filename_out, 'w') as f:
         for comment in comments:
-            f.write(comment.__repr__())
-            f.write("---")
+            f.write(comment)
+            f.write("\n---\n")
 
 if __name__ == "__main__":
     if len(argv) == 1:
