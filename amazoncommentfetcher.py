@@ -30,7 +30,7 @@ from urlopener import urlopener
 
 comments = []
 linklist = []
-filename_out = "comments.txt"
+filename_out = ""
 fetchqueue = Queue()
 MAX_THREADS = 30
 category = ""
@@ -244,9 +244,10 @@ def write2File(comments):
             #f.write("\n---\n")
 
 if __name__ == "__main__":
-    if len(argv) == 3:
+    if len(argv) == 4:
         category = argv[1]
-        amazonurl = argv[2]
+        filename_out = argv[2]
+        amazonurl = argv[3]
     else:
         print "python amazoncommentfetcher.py CATEGORYNAME 'URL'"
         exit(1)
