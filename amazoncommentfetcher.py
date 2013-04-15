@@ -33,6 +33,7 @@ linklist = []
 filename_out = "comments.txt"
 fetchqueue = Queue()
 MAX_THREADS = 30
+category = ""
 cnt = 0
 
 class Fetcher(threading.Thread):
@@ -235,18 +236,20 @@ def main(url):
     return 0
 
 def write2File(comments):
+    global category
+
     with open(filename_out, 'w') as f:
         for comment in comments:
-            f.write(comment)
+            f.write("%s|%s" % (category, comment))
             f.write("\n---\n")
 
 if __name__ == "__main__":
-    if len(argv) == 1:
-        amazonurl = str(raw_input('> '))
-    if len(argv) == 2:
-        amazonurl = argv[1]
-    elif len(argv) >= 3:
-        amazonurl = argv[1]
+    if len(argv) == 3:
+        category = argv[1]
+        amazonurl = argv[2]
+    else:
+        print "python amazoncommentfetcher.py CATEGORYNAME 'URL'"
+        exit(1)
 
     # Don't show that silly banner, we are not going to use it anyway
     if "&showViewpoints=1" in amazonurl:
