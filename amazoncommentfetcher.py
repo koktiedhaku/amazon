@@ -249,7 +249,7 @@ if __name__ == "__main__":
         filename_out = argv[2]
         amazonurl = argv[3]
     else:
-        print "python amazoncommentfetcher.py CATEGORYNAME 'URL'"
+        print "python amazoncommentfetcher.py CATEGORYNAME filaname 'URL'"
         exit(1)
 
     # Don't show that silly banner, we are not going to use it anyway
