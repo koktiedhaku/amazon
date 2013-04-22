@@ -1,0 +1,38 @@
+
+/home/courses/itims12/classification/mallet/mallet-2.0.7/bin/mallet import-file --input all_categories.txt --output koketi.mallet
+/home/courses/itims12/classification/mallet/mallet-2.0.7/bin/mallet import-file --input trainer.txt --output koketitrainer.mallet
+/home/courses/itims12/classification/mallet/mallet-2.0.7/bin/mallet train-classifier --input koketitrainer.mallet --output-classifier koketi.classifier
+/home/courses/itims12/classification/mallet/mallet-2.0.7/bin/mallet classify-file --input koketi.mallet --output koketitulos2.txt --classifier koketi.classifier
+
+
+#tuodaan mallet-muotoiseksi trainer-aineisto. Luodaan 2 tiedostoa ilman sulkusanoja sek‰ sulkusanojen kanssa.
+/home/courses/itims12/classification/mallet/mallet-2.0.7/bin/mallet import-file --remove-stopwords --input all_categories.txt --output koketi_trainer_wo_sw.mallet
+/home/courses/itims12/classification/mallet/mallet-2.0.7/bin/mallet import-file --input all_categories.txt --output koketi_trainer.mallet
+
+#tuodaan mallet-muotoiseksi luokiteltava-aineisto. Luodaan 2 tiedostoa ilman sulkusanoja sek‰ sulkusanojen kanssa.
+/home/courses/itims12/classification/mallet/mallet-2.0.7/bin/mallet import-file --input comparables_all.txt --output koketi_aineisto.mallet
+/home/courses/itims12/classification/mallet/mallet-2.0.7/bin/mallet import-file --remove-stopwords --input comparables_all.txt --output aineisto_wo_sw.mallet
+
+#luodaan kummastakin kaksi traineri‰ harjoittelemalla(MaxEnt ja NB).
+/home/courses/itims12/classification/mallet/mallet-2.0.7/bin/mallet train-classifier --input koketi_trainer.mallet --output-classifier koketi_NB.classifier
+
+
+/home/courses/itims12/classification/mallet/mallet-2.0.7/bin/mallet train-classifier --input koketi_trainer_wo_sw.mallet --output-classifier koketi_wo_sw_NB.classifier
+
+
+/home/courses/itims12/classification/mallet/mallet-2.0.7/bin/mallet train-classifier --input koketi_trainer.mallet --output-classifier koketi_ME.classifier --trainer MaxEnt
+
+
+/home/courses/itims12/classification/mallet/mallet-2.0.7/bin/mallet train-classifier --input koketi_trainer_wo_sw.mallet --output-classifier koketi_wo_sw_ME.classifier --trainer MaxEnt
+
+
+
+/home/courses/itims12/classification/mallet/mallet-2.0.7/bin/mallet train-classifier --input koketi_trainer.mallet --training-portion 0.9 --trainer MaxEnt
+
+#luokitellaan ilman sulkusanoja ja niiden kanssa.tehd‰‰n t‰m‰ MaxEnt ja NB k‰ytt‰m‰ll‰. 
+
+
+/home/courses/itims12/classification/mallet/mallet-2.0.7/bin/mallet classify-file --input koketi_aineisto.mallet --output koketitulos_NB.csv --classifier koketi_NB.classifier
+/home/courses/itims12/classification/mallet/mallet-2.0.7/bin/mallet classify-file --input koketi_aineisto.mallet --output koketitulos_ME.csv --classifier koketi_ME.classifier
+/home/courses/itims12/classification/mallet/mallet-2.0.7/bin/mallet classify-file --input aineisto_wo_sw.mallet --output koketitulos_wo_sw_NB.csv --classifier koketi_wo_sw_NB.classifier 
+/home/courses/itims12/classification/mallet/mallet-2.0.7/bin/mallet classify-file --input aineisto_wo_sw.mallet --output koketitulos_wo_sw_ME.csv --classifier koketi_wo_sw_ME.classifier 
