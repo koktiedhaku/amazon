@@ -1,7 +1,7 @@
+#!/usr/bin/env python
 
 import nltk
 import pprint
-#import gensim
 import re
 import sys, getopt
 import os
@@ -56,11 +56,11 @@ def main(argv):
 		try:
 			opts, args = getopt.getopt(argv,"hs:i:o:s:",["stem=","ifile=","ofile=", "ofile2="])
 		except getopt.GetoptError:
-			print 'test.py -i <inputfile> -o <outputfile>'
+			print 'koketi_cleaner.py -i <inputfile> -o <outputfile> -s <outputfile>'
 			sys.exit(2)
 		for opt, arg in opts:
 			if opt == '-h':
-				print 'test.py -s <false/true> -i <inputfile> -o <outputfile> \n -s stem \n-i input text file\noutput textfile'
+				print 'koketi_cleaner.py  -i <inputfile> -o <outputfile(stopwords removed, without stemmong> -s <outputfile(with stemming)> \n-i input text file\n-o -s output textfile'
 				sys.exit()
 			elif opt in ("-i", "--ifile"):
 				inputfile = arg
@@ -69,7 +69,7 @@ def main(argv):
 			elif opt in ("-s", "--ofile2"):
 				outputfile2 = arg	
 			else:
-				print 'test.py -s <false/true> -i <inputfile> -o <outputfile> \n -s stem \n-i input text file\noutput textfile'
+				print 'koketi_cleaner.py  -i <inputfile> -o <outputfile> -s <outputfile> \n-i input text file\n-o -s output textfile'
 		print 'Input file is "', inputfile
 		print 'Output file is "', outputfile
 		file = open(inputfile, 'r' )
